@@ -1,17 +1,17 @@
 # config valid only for current version of Capistrano
 lock "3.8.0"
 
-set :application, "my_app_name"
-set :repo_url, "git@example.com:me/my_repo.git"
+set :application, "rails-intro"
+set :repo_url, "nicolas@github.com/SommerNicolas/rails-intro.git"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
 # Default deploy_to directory is /var/www/my_app_name
-# set :deploy_to, "/var/www/my_app_name"
+set :deploy_to, "/home/nicolas/www/rails-intro"
 
 # Default value for :format is :airbrussh.
-# set :format, :airbrussh
+set :format, :airbrussh
 
 # You can configure the Airbrussh format using :format_options.
 # These are the defaults.
@@ -31,3 +31,17 @@ set :repo_url, "git@example.com:me/my_repo.git"
 
 # Default value for keep_releases is 5
 # set :keep_releases, 5
+
+namespace :deploy do
+	after :finished, :restart_puma do
+		on roles(:web) do 
+			execute :sudo, 'service puma-nicolas restart'
+			execute :sudo, 'service nginx reload'
+		end
+	end
+end
+
+prefix = "set -a; . ~/.envfile; set +a"
+[:bundle, :rake, :rails].each do |cmd|
+	SSHKit.config.command_map.prefix[cmd].push(prefix)
+end
